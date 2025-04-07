@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using ICSharpCode.SharpZipLib.Zip;
+using ZipFile = System.IO.Compression.ZipFile;
 
 namespace dVRC
 {
@@ -24,6 +24,6 @@ namespace dVRC
         }
 
         public static void ExtractArchive(string fileName, string outputPath) =>
-            new FastZip().ExtractZip(fileName, outputPath, String.Empty);
+            ZipFile.ExtractToDirectory(fileName, outputPath);
     }
 }

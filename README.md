@@ -11,12 +11,12 @@ A Unity tool to Recover your lost VRChat Assets using [AssetRipper](https://gith
 
 1) [Download the Latest Release](https://github.com/200Tigersbloxed/dVRC/releases/latest/download/dVRC.unitypackage)
 2) Import into a project with the VRCSDK
-    + Support for the VRChat Creator Companion is limited
 3) Open the VRChat SDK Window
     + Login if Required
 4) Navigate to the Content Manager tab and make sure all your assets load
 5) Open dVRC > Main Window
 6) Download AssetRipper
+    + Optional if you don't plan on ripping
 7) Select either an Avatar or World to download
 8) Download the Asset
 9) Return to the Home Page of the Main Window

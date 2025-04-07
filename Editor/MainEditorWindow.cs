@@ -112,9 +112,6 @@ namespace dVRC.Editor
 
         private string PrettyPrintFile(string file) => Path.GetFileName(file);
 
-        private bool wasWorking;
-        private string wasPath;
-
         private void DrawManageFileMenu()
         {
             GUILayout.Label(PrettyPrintFile(SelectedTools.SelectedFile), EditorStyles.centeredGreyMiniLabel);
@@ -139,23 +136,40 @@ namespace dVRC.Editor
                     string path = EditorUtility.OpenFolderPanel("Select a Folder", "Assets", "");
                     if(string.IsNullOrEmpty(path))
                         return;
+                    int childLength = Directory.GetDirectories(path).Length + Directory.GetFiles(path).Length;
+                    if(childLength > 0)
+                        if(!EditorUtility.DisplayDialog("dVRC",
+                               "You have selected a directory which is not empty. This will delete ALL files in that directory! Would you like to continue?",
+                               "Yes", "No"))
+                            return;
                     if (IOTools.IsChildDirectory(Application.dataPath, path))
                         if(!EditorUtility.DisplayDialog("dVRC",
                                "You have selected a directory in which the ExportedAssets will be inserted into the current project. This may cause issues, are you sure you would like to continue?",
                                "Yes", "No"))
                             return;
-                    wasWorking = false;
-                    wasPath = path;
-                    _ripperHandler.OnData += s =>
+                    _ripperHandler.Rip(Path.GetFullPath(SelectedTools.SelectedFile), path, () =>
                     {
-                        wasWorking = true;
-                    };
-                    _ripperHandler.Rip(Path.GetFullPath(SelectedTools.SelectedFile), path);
+                        if (Directory.Exists(path))
+                        {
+                            EditorUtility.DisplayDialog("dVRC", "Completed Operation!", "OK");
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Directory " + path + " does not exist post-export!");
+                            EditorUtility.DisplayDialog("dVRC",
+                                "Failed to complete operation! Check the Console for details.", "OK");
+                        }
+                    });
                 }
             }
             else
                 if(_ripperHandler.IsWorking)
+                {
                     GUILayout.Label("Currently Ripping...", EditorStyles.centeredGreyMiniLabel);
+                    Rect r = EditorGUILayout.GetControlRect();
+                    EditorGUI.ProgressBar(r, _ripperHandler.Progress,
+                        Mathf.RoundToInt(_ripperHandler.Progress * 100f) + "%");
+                }
             if(!_ripperHandler.IsWorking)
                 if(GUILayout.Button("Return", EditorStyles.miniButtonRight))
                     SelectedTools.SelectedFile = String.Empty;
@@ -263,26 +277,6 @@ namespace dVRC.Editor
 #else
             GUILayout.Label("Could not find the VRC_SDK_VRCSDK3 Scripting Definition! Is the VRCSDK present?");
 #endif
-        }
-
-        public void Update()
-        {
-            if (!_ripperHandler.IsWorking && wasWorking)
-            {
-                wasWorking = false;
-                string output = Path.Combine(wasPath, "ExportedProject");
-                if (Directory.Exists(output))
-                {
-                    if (EditorUtility.DisplayDialog("dVRC", "Completed Operation!", "OK"))
-                        Process.Start(output);
-                }
-                else
-                {
-                    Debug.LogWarning("Directory " + output + " does not exist post-export!");
-                    EditorUtility.DisplayDialog("dVRC",
-                        "Failed to complete operation! Check the Console for details.", "OK");
-                }
-            }
         }
     }
 }
